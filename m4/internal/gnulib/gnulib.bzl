@@ -133,6 +133,34 @@ static const char * _replaced_get_charset_aliases (void)
         "static _Noreturn void": "static _Noreturn __attribute_noreturn__ void",
     })
 
+  #"\n".join([
+  #          "#include <string.h>",
+  #          "#include <sys/types.h>",
+  #      ]): "\n".join([
+  #          "#include <string.h>",
+  #          "#include <sys/stat.h>",
+  #          "#include <sys/types.h>",
+  #      ]),
+
+    ctx.template("gnulib/lib/c-stack.c", "gnulib/lib/c-stack.c", substitutions = {
+        "\n".join([
+                "# define SIGSTKSZ 16384",
+                "#elif HAVE_LIBSIGSEGV && SIGSTKSZ < 16384"
+        ]):
+        "\n".join([
+                "#define get_sigstksz()  (16384)",
+                "#elif HAVE_LIBSIGSEGV"
+        ])
+    })
+
+    ctx.template("gnulib/lib/c-stack.c", "gnulib/lib/c-stack.c", substitutions = {
+        "char buffer[SIGSTKSZ];":
+        "\n".join([
+            "/* allocate buffer with size from get_sigstksz() */",
+            "char *buffer;"
+        ])
+    })
+
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
     "errno",
